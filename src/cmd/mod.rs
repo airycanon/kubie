@@ -42,14 +42,20 @@ pub fn select_or_list_context(skim_options: &SkimOptions, installed: &mut Instal
         let item_reader = SkimItemReader::default();
         let items = item_reader.of_bufread(Cursor::new(context_names.join("\n")));
         let selected_items = Skim::run_with(skim_options, Some(items))
-            .map(|out| match out.final_key {
-                Key::Enter => out.selected_items,
-                _ => Vec::new(),
+            .map(|out| {
+                eprintln!("DEBUG: skim final_key = {:?}", out.final_key);
+                eprintln!("DEBUG: selected_items count = {}", out.selected_items.len());
+                match out.final_key {
+                    Key::Enter => out.selected_items,
+                    _ => Vec::new(),
+                }
             })
             .unwrap_or_default();
         if selected_items.is_empty() {
+            eprintln!("DEBUG: No items selected, returning Cancelled");
             return Ok(SelectResult::Cancelled);
         }
+        eprintln!("DEBUG: Selected item: {}", selected_items[0].output());
         Ok(SelectResult::Selected(selected_items[0].output().to_string()))
     } else {
         for c in context_names {
