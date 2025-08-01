@@ -21,6 +21,10 @@ pub enum Kubie {
         #[clap(short = 'r', long = "recursive")]
         recursive: bool,
 
+        /// Update the global kubeconfig instead of spawning a shell.
+        #[clap(short = 'g', long = "global")]
+        global: bool,
+
         /// Name of the context to enter. Use '-' to switch back to the previous context.
         context_name: Option<String>,
     },

@@ -16,6 +16,7 @@ fn enter_context(
     context_name: &str,
     namespace_name: Option<&str>,
     recursive: bool,
+    global: bool,
 ) -> Result<()> {
     let state = State::load()?;
     let mut session = Session::load()?;
@@ -46,7 +47,12 @@ fn enter_context(
         }
     }
 
-    if vars::is_kubie_active() && !recursive {
+    if global {
+        // Global mode: write to default kubeconfig location
+        let global_path = kubeconfig::get_default_kubeconfig_path()?;
+        kubeconfig.write_to_file(global_path.as_path())?;
+        println!("Global kubeconfig updated to context: {}", &kubeconfig.contexts[0].name);
+    } else if vars::is_kubie_active() && !recursive {
         let path = kubeconfig::get_kubeconfig_path()?;
         kubeconfig.write_to_file(path.as_path())?;
         session.save(None)?;
@@ -64,6 +70,7 @@ pub fn context(
     namespace_name: Option<String>,
     kubeconfigs: Vec<String>,
     recursive: bool,
+    global: bool,
 ) -> Result<()> {
     let mut installed = if kubeconfigs.is_empty() {
         kubeconfig::get_installed_contexts(settings)?
@@ -79,5 +86,5 @@ pub fn context(
         },
     };
 
-    enter_context(settings, installed, &context_name, namespace_name.as_deref(), recursive)
+    enter_context(settings, installed, &context_name, namespace_name.as_deref(), recursive, global)
 }

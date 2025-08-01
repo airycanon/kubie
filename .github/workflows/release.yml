@@ -100,18 +100,3 @@ jobs:
           asset_name: kubie-darwin-arm64
           tag: ${{ github.ref }}
 
-  publish-crates-io:
-    name: Publish to crates.io
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v3
-      - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-      - run: cargo publish --token ${CRATES_TOKEN}
-        env:
-          CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
