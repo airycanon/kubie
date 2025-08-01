@@ -297,3 +297,22 @@ pub fn get_kubeconfig_path() -> Result<PathBuf> {
 pub fn get_current_config() -> Result<KubeConfig> {
     ioutil::read_yaml(get_kubeconfig_path()?)
 }
+
+pub fn get_default_kubeconfig_path() -> Result<PathBuf> {
+    // First try to use the original KUBECONFIG that was backed up by kubie
+    if let Ok(original_kubeconfig) = env::var("KUBIE_ORIGINAL_KUBECONFIG") {
+        let first_path = original_kubeconfig.split(':').next().unwrap_or(&original_kubeconfig);
+        return Ok(PathBuf::from(first_path));
+    }
+    
+    // If not in a kubie environment, use the current KUBECONFIG
+    if let Ok(kubeconfig_env) = env::var("KUBECONFIG") {
+        let first_path = kubeconfig_env.split(':').next().unwrap_or(&kubeconfig_env);
+        Ok(PathBuf::from(first_path))
+    } else {
+        // Fall back to default ~/.kube/config
+        let home = env::var("HOME").or_else(|_| env::var("USERPROFILE"))
+            .context("Could not find home directory")?;
+        Ok(PathBuf::from(home).join(".kube").join("config"))
+    }
+}

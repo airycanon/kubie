@@ -68,6 +68,11 @@ pub fn spawn_shell(settings: &Settings, config: KubeConfig, session: &Session) -
 
     let mut env_vars = EnvVars::new();
 
+    // Backup the original KUBECONFIG before overriding it
+    if let Ok(original_kubeconfig) = std::env::var("KUBECONFIG") {
+        env_vars.insert("KUBIE_ORIGINAL_KUBECONFIG", original_kubeconfig);
+    }
+
     // Pre-insert the KUBECONFIG variable into the shell.
     // This will make sure any shell plugins/add-ons which require this env variable
     // will have it available at the beginninng of the .rc file
